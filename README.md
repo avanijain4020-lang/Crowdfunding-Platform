@@ -29,7 +29,7 @@ The Crowdfunding Platform is a modern, responsive Full-Stack Fundraising Portal.
 
 ## 📦 Project Structure
 
-
+```text
 Crowdfunding-Platform/
 ├── src/
 │   ├── App.jsx          # Main application core logic (CRUD + Login Auth)
