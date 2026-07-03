@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crowdfunding Platform</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>🚀 FundMyProject</h1>
+        <p>A decentralized way to fund amazing innovations</p>
+    </header>
+
+    <main class="container">
+        <section class="form-section">
+            <h2>Create a New Campaign</h2>
+            <form id="campaignForm">
+                <input type="text" id="title" placeholder="Campaign Title" required>
+                <input type="number" id="goal" placeholder="Target Goal ($)" required>
+                <input type="text" id="category" placeholder="Category (e.g. Technology)" required>
+                <button type="submit">Launch Campaign</button>
+            </form>
+        </section>
+
+        <section class="campaigns-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h2>Active Campaigns</h2>
+                <select id="categoryFilter" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                    <option value="all">All Categories</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Innovation">Innovation</option>
+                </select>
+            </div>
+            <div id="campaignsContainer" class="campaigns-grid">
+                </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
