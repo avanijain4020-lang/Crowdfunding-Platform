@@ -1,7 +1,5 @@
 # 🤝 Crowdfunding Platform
 
-🔗 **Live Demo:** [https://crowdfunding-platform-k1vvdbgev-avanijain4020-langs-projects.vercel.app/](https://crowdfunding-platform-k1vvdbgev-avanijain4020-langs-projects.vercel.app/)
-
 🚀 **Empowering Ideas, Securing Futures.**
 
 The Crowdfunding Platform is a modern, responsive Full-Stack Fundraising Portal. It enables users to seamlessly launch crowdfunding campaigns for noble causes or startup ideas, track donation progress in real-time, and manage everything within a secure authenticated environment.
