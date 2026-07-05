@@ -68,7 +68,7 @@ function App() {
         setUser(data.user);
         localStorage.setItem('user', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
-        setCurrentView('dashboard'); 
+        setCurrentView('dashboard');
       } else {
         alert("Registration Successful! Please Login. 🎉");
         setIsLoginView(true);
