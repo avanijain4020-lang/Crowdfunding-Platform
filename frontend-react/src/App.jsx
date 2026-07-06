@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 
-const API_URL = 'http://localhost:5002/api/campaigns';
-const AUTH_URL = 'http://localhost:5002/api/auth';
-
 function App() {
   // --- States ---
   const [campaigns, setCampaigns] = useState([]);
@@ -19,7 +16,7 @@ function App() {
   // Navigation View Toggle ('dashboard' ya 'profile')
   const [currentView, setCurrentView] = useState('dashboard');
 
-  // --- NEW STATES: Payment Modal ---
+  // --- Payment Modal States ---
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [activePaymentCampaign, setActivePaymentCampaign] = useState(null);
   const [donationAmount, setDonationAmount] = useState('');
@@ -27,14 +24,37 @@ function App() {
   const [paymentForm, setPaymentForm] = useState({ cardNumber: '', expiry: '', cvv: '', upiId: '' });
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // --- Fetch Campaigns ---
-  const fetchCampaigns = async () => {
-    try {
-      const response = await fetch(API_URL);
-      const data = await response.json();
-      setCampaigns(data);
-    } catch (error) {
-      console.error("Error fetching data:", error);
+  // --- Local Database Seed Setup ---
+  const fetchCampaigns = () => {
+    const localCampaigns = localStorage.getItem('local_campaigns');
+    if (localCampaigns) {
+      setCampaigns(JSON.parse(localCampaigns));
+    } else {
+      // Dummy baseline data agar database bilkul khali ho
+      const initialData = [
+        {
+          _id: "c1",
+          title: "Next-Gen Smart Watch",
+          goal: 5000,
+          raised: 1200,
+          category: "Technology",
+          userId: "admin123",
+          createdBy: "Alex Mercer",
+          donors: [{ donorName: "Sarah Jenkins", amount: 200 }]
+        },
+        {
+          _id: "c2",
+          title: "Eco-Friendly Water Bottle",
+          goal: 2500,
+          raised: 2500,
+          category: "Environment",
+          userId: "admin456",
+          createdBy: "Diana Prince",
+          donors: [{ donorName: "Bruce Wayne", amount: 2500 }]
+        }
+      ];
+      localStorage.setItem('local_campaigns', JSON.stringify(initialData));
+      setCampaigns(initialData);
     }
   };
 
@@ -46,37 +66,53 @@ function App() {
     }
   }, []);
 
-  // --- Auth Handlers ---
-  const handleAuthSubmit = async (e) => {
+  // --- Simulated Auth Handlers (Supports Multiple Dynamic Users) ---
+  const handleAuthSubmit = (e) => {
     e.preventDefault();
     setAuthError('');
-    const endpoint = isLoginView ? '/login' : '/signup';
     
-    try {
-      const response = await fetch(`${AUTH_URL}${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authForm)
-      });
-      const data = await response.json();
+    // Memory se existing user profiles array load karein
+    const registeredUsers = JSON.parse(localStorage.getItem('registered_users_db')) || [];
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Something went wrong');
-      }
+    if (isLoginView) {
+      // Login Logic
+      const validUser = registeredUsers.find(
+        (u) => u.email === authForm.email && u.password === authForm.password
+      );
 
-      if (isLoginView) {
-        setUser(data.user);
-        localStorage.setItem('user', JSON.stringify(data.user));
-        localStorage.setItem('token', data.token);
+      if (validUser) {
+        const sessionUser = { id: validUser.id, name: validUser.name, email: validUser.email };
+        setUser(sessionUser);
+        localStorage.setItem('user', JSON.stringify(sessionUser));
+        localStorage.setItem('token', 'simulated-secure-jwt-token-key');
         setCurrentView('dashboard');
       } else {
-        alert("Registration Successful! Please Login. 🎉");
-        setIsLoginView(true);
+        setAuthError('Invalid email or password! Please register first.');
+        return;
       }
-      setAuthForm({ name: '', email: '', password: '' });
-    } catch (err) {
-      setAuthError(err.message);
+    } else {
+      // Signup / Registration Logic
+      const emailExists = registeredUsers.some((u) => u.email === authForm.email);
+      if (emailExists) {
+        setAuthError('This email address is already registered!');
+        return;
+      }
+
+      const newUserObj = {
+        id: 'user_' + Date.now(),
+        name: authForm.name,
+        email: authForm.email,
+        password: authForm.password
+      };
+
+      registeredUsers.push(newUserObj);
+      localStorage.setItem('registered_users_db', JSON.stringify(registeredUsers));
+      
+      alert("Registration Successful! Please login with your credentials. 🎉");
+      setIsLoginView(true);
     }
+
+    setAuthForm({ name: '', email: '', password: '' });
   };
 
   const handleLogout = () => {
@@ -86,36 +122,42 @@ function App() {
     localStorage.removeItem('token');
   };
 
-  // --- Campaign Handlers ---
-  const handleCreate = async (e) => {
+  // --- Simulated Campaign Creation Handlers ---
+  const handleCreate = (e) => {
     e.preventDefault();
-    const token = localStorage.getItem('token');
     
-    try {
-      const response = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ title, goal, category })
-      });
-      
-      if (response.ok) {
-        setTitle(''); setGoal(''); setCategory('');
-        fetchCampaigns();
-      } else {
-        const errData = await response.json();
-        alert(errData.message || "Failed to create campaign");
-      }
-    } catch (error) {
-      console.error("Error creating:", error);
+    if (Number(goal) < 100) {
+      alert("Goal must be minimum $100");
+      return;
     }
+
+    const currentLocalCampaigns = JSON.parse(localStorage.getItem('local_campaigns')) || [];
+    
+    const newCampaign = {
+      _id: 'camp_' + Date.now(),
+      title: title,
+      goal: Number(goal),
+      raised: 0,
+      category: category,
+      userId: user.id,
+      createdBy: user.name,
+      donors: []
+    };
+
+    const updatedList = [newCampaign, ...currentLocalCampaigns];
+    localStorage.setItem('local_campaigns', JSON.stringify(updatedList));
+    
+    setTitle(''); 
+    setGoal(''); 
+    setCategory('');
+    setCampaigns(updatedList);
   };
 
   // --- Trigger Payment Modal ---
   const openPaymentGateway = (campaign) => {
-    const amt = document.getElementById(`amt-${campaign._id}`).value;
+    const amtInput = document.getElementById(`amt-${campaign._id}`);
+    const amt = amtInput ? amtInput.value : '';
+    
     if (!amt || Number(amt) <= 0) {
       alert("Please enter a valid amount to fund!");
       return;
@@ -125,49 +167,59 @@ function App() {
     setShowPaymentModal(true);
   };
 
-  // --- Process Secure Donation (Triggered inside Modal) ---
-  const handleSecurePaymentSubmit = async (e) => {
+  // --- Process Secure Donation Engine ---
+  const handleSecurePaymentSubmit = (e) => {
     e.preventDefault();
+    
     const token = localStorage.getItem('token');
-    if (!token) {
-      alert("Please login to make a donation.");
+    if (!token || !user) {
+      alert("Please login to make a secure donation.");
       return;
     }
 
-    setIsProcessing(true); // Spinner/Loading start
+    setIsProcessing(true); // Spinner activates
 
-    // 2 Seconds ka fake delay simulation premium experience ke liye
-    setTimeout(async () => {
-      try {
-        const response = await fetch(`${API_URL}/${activePaymentCampaign._id}/pledge`, {
-          method: 'PUT',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ amount: donationAmount })
+    // 1.5 Seconds premium payment gateway countdown delay emulation
+    setTimeout(() => {
+      const currentLocalCampaigns = JSON.parse(localStorage.getItem('local_campaigns')) || [];
+      
+      const targetIndex = currentLocalCampaigns.findIndex(c => c._id === activePaymentCampaign._id);
+      
+      if (targetIndex !== -1) {
+        // Amount add karein
+        currentLocalCampaigns[targetIndex].raised += Number(donationAmount);
+        
+        // Donor list object instantiate karein
+        if (!currentLocalCampaigns[targetIndex].donors) {
+          currentLocalCampaigns[targetIndex].donors = [];
+        }
+        
+        currentLocalCampaigns[targetIndex].donors.unshift({
+          donorName: user.name,
+          amount: Number(donationAmount)
         });
 
-        if (response.ok) {
-          alert(`🎉 Payment Successful! Thank you for supporting "${activePaymentCampaign.title}"`);
-          setShowPaymentModal(false);
-          setDonationAmount('');
-          setPaymentForm({ cardNumber: '', expiry: '', cvv: '', upiId: '' });
-          document.getElementById(`amt-${activePaymentCampaign._id}`).value = '';
-          fetchCampaigns();
-        } else {
-          const errData = await response.json();
-          alert(errData.message || "Donation failed");
-        }
-      } catch (error) {
-        console.error("Error donating:", error);
-      } finally {
-        setIsProcessing(false);
+        // Sync to state and storage
+        localStorage.setItem('local_campaigns', JSON.stringify(currentLocalCampaigns));
+        setCampaigns(currentLocalCampaigns);
+        
+        alert(`🎉 Payment Successful! Thank you for supporting "${activePaymentCampaign.title}"`);
       }
-    }, 2000);
+
+      // Cleanup & modal closure operations
+      setShowPaymentModal(false);
+      setDonationAmount('');
+      setPaymentForm({ cardNumber: '', expiry: '', cvv: '', upiId: '' });
+      
+      const amtInput = document.getElementById(`amt-${activePaymentCampaign._id}`);
+      if (amtInput) amtInput.value = '';
+      
+      setIsProcessing(false);
+    }, 1500);
   };
 
-  const handleDelete = async (id, creatorId) => {
+  // --- Campaign Hard-Deletion Rules ---
+  const handleDelete = (id, creatorId) => {
     if (!confirm("Are you sure you want to close this campaign?")) return;
     
     if (creatorId !== user.id) {
@@ -175,24 +227,11 @@ function App() {
       return;
     }
 
-    const token = localStorage.getItem('token');
-    try {
-      const response = await fetch(`${API_URL}/${id}`, { 
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        fetchCampaigns();
-      } else {
-        const errData = await response.json();
-        alert(errData.message);
-      }
-    } catch (error) {
-      console.error("Error deleting:", error);
-    }
+    const currentLocalCampaigns = JSON.parse(localStorage.getItem('local_campaigns')) || [];
+    const filteredCampaigns = currentLocalCampaigns.filter(c => c._id !== id);
+    
+    localStorage.setItem('local_campaigns', JSON.stringify(filteredCampaigns));
+    setCampaigns(filteredCampaigns);
   };
 
   const totalCampaigns = campaigns.length;
@@ -201,7 +240,7 @@ function App() {
   const myCampaigns = campaigns.filter(c => c.userId && user && c.userId === user.id);
   const myTotalRaised = myCampaigns.reduce((sum, c) => sum + c.raised, 0);
 
-  // --- RENDER CONDITION 1: Login Screen ---
+  // --- RENDER CONDITION 1: Login/Register Screen ---
   if (!user) {
     return (
       <div className="glass-wrapper">
@@ -232,7 +271,7 @@ function App() {
     );
   }
 
-  // --- RENDER CONDITION 2: Main Dashboard & Profile ---
+  // --- RENDER CONDITION 2: Main Dashboard & Profile Panels ---
   return (
     <div className="app-container">
       <header style={{ position: 'relative' }}>
@@ -247,7 +286,7 @@ function App() {
 
       <div className="main-content">
         
-        {/* --- VIEW 1: DASHBOARD --- */}
+        {/* --- VIEW 1: GENERAL SYSTEM DASHBOARD --- */}
         {currentView === 'dashboard' && (
           <>
             <div className="stats-grid">
@@ -309,11 +348,10 @@ function App() {
 
                         <div className="card-actions">
                           {percentage >= 100 ? (
-                            <div className="target-achieved">🎉 Target Achieved!</div>
+                            <div className="target-achieved" style={{ flex: 1, textAlign: 'center', fontWeight: 'bold', color: '#16a34a' }}>🎉 Target Achieved!</div>
                           ) : (
-                            <div className="donate-form">
-                              <input type="number" id={`amt-${campaign._id}`} placeholder="Amt ($)" />
-                              {/* Open payment gateway modal */}
+                            <div className="donate-form" style={{ display: 'flex', gap: '5px', flex: 1 }}>
+                              <input type="number" id={`amt-${campaign._id}`} placeholder="Amt ($)" style={{ width: '70px' }} />
                               <button className="btn-success" onClick={() => openPaymentGateway(campaign)}>Fund</button>
                             </div>
                           )}
@@ -328,7 +366,7 @@ function App() {
           </>
         )}
 
-        {/* --- VIEW 2: USER PROFILE SECTION --- */}
+        {/* --- VIEW 2: PERSONALIZED USER PROFILE SECTION --- */}
         {currentView === 'profile' && (
           <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
             <div className="form-section" style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '25px', background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)' }}>
@@ -382,7 +420,7 @@ function App() {
 
       </div>
 
-      {/* --- NEW: PAYMENT MOCKUP MODAL GATEWAY UI --- */}
+      {/* --- PREMIUM PAYMENT GATEWAY MODAL SIMULATOR --- */}
       {showPaymentModal && activePaymentCampaign && (
         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(15, 23, 42, 0.65)', backdropFilter: 'blur(8px)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
           <div style={{ background: '#ffffff', padding: '30px', borderRadius: '16px', width: '420px', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2)', border: '1px solid #e2e8f0', position: 'relative' }}>
@@ -395,7 +433,7 @@ function App() {
               <div style={{ marginTop: '12px', background: '#f0fdf4', padding: '8px', borderRadius: '8px', color: '#16a34a', fontWeight: 'bold', fontSize: '1.2rem' }}>${donationAmount}</div>
             </div>
 
-            {/* Payment Method Toggle Tabs */}
+            {/* Payment Tabs */}
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', background: '#f8fafc', padding: '4px', borderRadius: '8px' }}>
               <button type="button" onClick={() => setPaymentMethod('card')} style={{ flex: 1, padding: '8px', border: 'none', background: paymentMethod === 'card' ? '#ffffff' : 'none', color: paymentMethod === 'card' ? '#4f46e5' : '#64748b', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', boxShadow: paymentMethod === 'card' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>💳 Card</button>
               <button type="button" onClick={() => setPaymentMethod('upi')} style={{ flex: 1, padding: '8px', border: 'none', background: paymentMethod === 'upi' ? '#ffffff' : 'none', color: paymentMethod === 'upi' ? '#4f46e5' : '#64748b', fontWeight: 'bold', borderRadius: '6px', cursor: 'pointer', boxShadow: paymentMethod === 'upi' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none' }}>📱 UPI ID</button>
