@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - CrowdFund</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header>
+        <h1>🚀 CrowdFund</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <div class="container" style="max-width: 450px; margin-top: 50px;">
+        <div class="campaign-card">
+            <h2 style="text-align: center;">Create an Account</h2>
+            <form onsubmit="handleRegister(event)">
+                <div style="margin-bottom: 15px;">
+                    <label><strong>Full Name:</strong></label>
+                    <input type="text" id="reg-name" required style="width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label><strong>Email Address:</strong></label>
+                    <input type="email" id="reg-email" required style="width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label><strong>Password:</strong></label>
+                    <input type="password" id="reg-password" required style="width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box;">
+                </div>
+                <button type="submit" style="width: 100%; background-color: #2e7d32; padding: 12px;">Sign Up</button>
+            </form>
+            <p style="text-align: center; margin-top: 15px;">
+                Already have an account? <a href="login.html">Login here</a>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const res = await fetch('http://localhost:5000/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message);
+                    window.location.href = 'login.html';
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert("Server error during registration.");
+            }
+        }
+    </script>
+</body>
+</html>

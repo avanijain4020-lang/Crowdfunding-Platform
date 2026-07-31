@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CrowdFund</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f8;
+            color: #333;
+        }
+
+        /* 🚀 UPDATED NAVBAR HEADER STYLING */
+        .navbar {
+            display: flex;
+            justify-content: space-between; /* Logo Left me, Links Right me */
+            align-items: center;            /* Vertical center alignment */
+            background-color: #ffffff;
+            padding: 15px 40px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .logo {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a237e;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 15px; /* Items ke beech me spacing */
+        }
+
+        .nav-btn {
+            text-decoration: none;
+            color: #333333;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .nav-btn:hover {
+            background-color: #f0f2f5;
+            color: #1a237e;
+        }
+
+        .logout-btn {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        .logout-btn:hover {
+            background-color: #bd2130;
+        }
+
+        /* MAIN CONTAINER */
+        .dashboard-container {
+            max-width: 1000px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        /* WELCOME CARD */
+        .welcome-card {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.03);
+            margin-bottom: 25px;
+        }
+
+        .welcome-card h2 {
+            font-size: 22px;
+            color: #1a237e;
+        }
+
+        .welcome-card p {
+            color: #666;
+            font-size: 14px;
+            margin-top: 4px;
+        }
+
+        .create-btn {
+            background-color: #2e7d32;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .create-btn:hover {
+            background-color: #1b5e20;
+        }
+
+        /* STATS GRID */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            border-radius: 10px;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .stat-card.green {
+            background: #00563B;
+        }
+
+        .stat-card.blue {
+            background: #1976D2;
+        }
+
+        .stat-card h4 {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.9;
+        }
+
+        .stat-card h2 {
+            font-size: 28px;
+            margin-top: 10px;
+        }
+
+        /* SECTION TITLE */
+        .section-title {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* CAMPAIGN LIST */
+        .campaign-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .user-campaign-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.04);
+        }
+
+        .card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .badge {
+            background: #e0f2f1;
+            color: #00796b;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .raised-status {
+            font-size: 12px;
+            color: #777;
+            font-weight: 600;
+        }
+
+        .user-campaign-card h3 {
+            margin-bottom: 8px;
+            font-size: 18px;
+        }
+
+        .user-campaign-card p {
+            color: #555;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .card-bottom {
+            background: #f8f9fa;
+            padding: 10px 15px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+        }
+
+        .amount-green {
+            color: #2e7d32;
+            font-weight: bold;
+            font-size: 15px;
+        }
+
+        .amount-dark {
+            color: #333;
+            font-weight: bold;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🚀 CLEAN RIGHT-ALIGNED NAVBAR HEADER -->
+    <header class="navbar">
+        <div class="logo">🚀 CrowdFund</div>
+        
+        <nav class="nav-links">
+            <a href="index.html" class="nav-btn">Home / Explore</a>
+            <button id="logout-btn" onclick="logout()" class="logout-btn">Logout</button>
+        </nav>
+    </header>
+
+    <!-- DASHBOARD CONTENT -->
+    <main class="dashboard-container">
+        
+        <!-- WELCOME CARD -->
+        <div class="welcome-card">
+            <div>
+                <h2 id="welcome-name">👋 Welcome back!</h2>
+                <p id="welcome-email">user@example.com</p>
+            </div>
+            <a href="index.html#new-title" class="create-btn">+ Create New Campaign</a>
+        </div>
+
+        <!-- STATS -->
+        <div class="stats-grid">
+            <div class="stat-card green">
+                <h4>Total Campaigns Created</h4>
+                <h2 id="stat-total-campaigns">0</h2>
+            </div>
+            <div class="stat-card blue">
+                <h4>Total Funds Raised</h4>
+                <h2 id="stat-total-raised">$0</h2>
+            </div>
+        </div>
+
+        <!-- USER'S CAMPAIGNS -->
+        <h3 class="section-title">Your Created Campaigns</h3>
+        <div id="user-campaigns-list" class="campaign-list">
+            <!-- Dynamic Campaign List Here -->
+        </div>
+
+    </main>
+
+    <script src="script.js"></script>
+    <script>
+        // DASHBOARD SPECIFIC SCRIPT
+        function loadDashboardData() {
+            const user = JSON.parse(localStorage.getItem('currentUser'));
+            if (!user) {
+                window.location.href = 'auth.html';
+                return;
+            }
+
+            document.getElementById('welcome-name').innerText = `👋 Welcome back, ${user.name}!`;
+            document.getElementById('welcome-email').innerText = user.email;
+
+            // Load user's created campaigns
+            fetch(`${API_URL}/campaigns`)
+                .then(res => res.json())
+                .then(campaigns => {
+                    // Filter user's campaigns by email or creatorName
+                    const myCampaigns = campaigns.filter(c => c.creatorEmail === user.email || c.creatorName === user.name);
+
+                    document.getElementById('stat-total-campaigns').innerText = myCampaigns.length;
+
+                    const totalRaised = myCampaigns.reduce((sum, c) => sum + (c.raisedAmount || 0), 0);
+                    document.getElementById('stat-total-raised').innerText = `$${totalRaised.toLocaleString()}`;
+
+                    const container = document.getElementById('user-campaigns-list');
+                    container.innerHTML = "";
+
+                    if (myCampaigns.length === 0) {
+                        container.innerHTML = "<p style='text-align:center; color:#777;'>You haven't created any campaigns yet.</p>";
+                        return;
+                    }
+
+                    myCampaigns.forEach(c => {
+                        let pct = c.goalAmount > 0 ? Math.round((c.raisedAmount / c.goalAmount) * 100) : 0;
+                        container.innerHTML += `
+                            <div class="user-campaign-card">
+                                <div class="card-top">
+                                    <span class="badge">🏷️ ${c.category || 'General'}</span>
+                                    <span class="raised-status">Raised Status: ${pct}%</span>
+                                </div>
+                                <h3>${c.title}</h3>
+                                <p>${c.description}</p>
+                                <div class="card-bottom">
+                                    <div>
+                                        <span>Raised Amount</span><br>
+                                        <span class="amount-green">$${c.raisedAmount.toLocaleString()}</span>
+                                    </div>
+                                    <div style="text-align: right;">
+                                        <span>Target Goal</span><br>
+                                        <span class="amount-dark">$${c.goalAmount.toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                })
+                .catch(err => console.error("Dashboard error:", err));
+        }
+
+        loadDashboardData();
+    </script>
+</body>
+</html>

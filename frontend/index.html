@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdFund - Innovate & Back Projects</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <header class="navbar">
+        <div class="logo">🚀 CrowdFund</div>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="dashboard.html" id="dash-link" style="display: none;">Dashboard</a>
+            <span id="user-info" style="font-weight: bold; margin-left: 10px; display: none;"></span>
+            <button id="logout-btn" onclick="logout()" style="display: none; background: #f44336; margin-left: 10px;">Logout</button>
+        </nav>
+    </header>
+
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1>Bring Creative Projects to Life</h1>
+        <p>Discover, support, and launch innovative campaigns around the world.</p>
+    </section>
+
+    <!-- SEARCH & FILTER SECTION -->
+    <section class="filter-section">
+        <input type="text" id="search-input" placeholder="🔍 Search campaigns by title or creator..." onkeyup="filterCampaigns()">
+        
+        <select id="category-filter" onchange="filterCampaigns()">
+            <option value="All">All Categories</option>
+            <option value="Tech">Tech</option>
+            <option value="Eco">Eco-Friendly</option>
+            <option value="Gaming">Gaming</option>
+            <option value="General">General</option>
+        </select>
+    </section>
+
+    <!-- CAMPAIGNS LIST -->
+    <main class="container">
+        <h2>Active Campaigns</h2>
+        <div id="campaigns-list" class="campaign-grid">
+            <!-- Campaign cards JS se load honge -->
+        </div>
+    </main>
+
+    <!-- LAUNCH CAMPAIGN FORM -->
+    <section class="container form-section">
+        <h2>Start Your Own Campaign 🚀</h2>
+        <form onsubmit="createNewCampaign(event)">
+            <input type="text" id="new-title" placeholder="Project Title" required>
+            
+            <select id="new-category" required>
+                <option value="" disabled selected>Select Category</option>
+                <option value="Tech">Tech</option>
+                <option value="Eco">Eco-Friendly</option>
+                <option value="Gaming">Gaming</option>
+                <option value="General">General</option>
+            </select>
+
+            <textarea id="new-desc" placeholder="Project Description" rows="4" required></textarea>
+            <input type="number" id="new-goal" placeholder="Goal Amount ($)" min="1" required>
+            
+            <button type="submit" class="launch-btn">Launch Campaign</button>
+        </form>
+    </section>
+
+    <!-- 💳 PAYMENT MODAL POPUP -->
+    <div id="payment-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closePaymentModal()">&times;</span>
+            <h3>💳 Complete Your Donation</h3>
+            <p id="modal-campaign-title" style="color: #666; font-size: 14px; margin-bottom: 15px;"></p>
+            
+            <form onsubmit="processPayment(event)">
+                <input type="hidden" id="modal-campaign-id">
+                
+                <div style="margin-bottom: 15px;">
+                    <label><strong>Enter Amount ($):</strong></label>
+                    <input type="number" id="payment-amount" min="1" required style="width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box;" placeholder="e.g. 50">
+                </div>
+
+                <div style="margin-bottom: 15px;">
+                    <label><strong>Select Payment Method:</strong></label>
+                    <select id="payment-method" onchange="togglePaymentFields()" style="width: 100%; padding: 10px; margin-top: 5px; box-sizing: border-box; font-weight: bold;">
+                        <option value="upi">📱 UPI / QR Code (GPay, Paytm, PhonePe)</option>
+                        <option value="card">💳 Credit / Debit Card</option>
+                        <option value="netbanking">🏦 Net Banking</option>
+                    </select>
+                </div>
+
+                <!-- Dynamic Input Fields -->
+                <div id="upi-field" class="pay-field" style="margin-bottom: 15px;">
+                    <input type="text" placeholder="Enter UPI ID (e.g. user@upi)" style="width: 100%; padding: 8px; box-sizing: border-box;">
+                </div>
+
+                <div id="card-field" class="pay-field" style="display: none; margin-bottom: 15px;">
+                    <input type="text" placeholder="Card Number (16 Digits)" maxlength="16" style="width: 100%; padding: 8px; margin-bottom: 8px; box-sizing: border-box;">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" placeholder="MM/YY" style="flex: 1; padding: 8px; box-sizing: border-box;">
+                        <input type="password" placeholder="CVV" maxlength="3" style="flex: 1; padding: 8px; box-sizing: border-box;">
+                    </div>
+                </div>
+
+                <div id="netbanking-field" class="pay-field" style="display: none; margin-bottom: 15px;">
+                    <select style="width: 100%; padding: 8px; box-sizing: border-box;">
+                        <option>Select Bank</option>
+                        <option>SBI</option>
+                        <option>HDFC Bank</option>
+                        <option>ICICI Bank</option>
+                        <option>Axis Bank</option>
+                    </select>
+                </div>
+
+                <button type="submit" style="width: 100%; background: #2e7d32; color: white; padding: 12px; border: none; border-radius: 5px; font-size: 16px; font-weight: bold; cursor: pointer;">
+                    Pay Now & Back Project 🚀
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

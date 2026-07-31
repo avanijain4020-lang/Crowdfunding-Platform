@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Portal - CrowdFund</title>
+    <link rel="stylesheet" href="auth-style.css">
+</head>
+<body>
+
+    <div class="auth-wrapper">
+        <div class="auth-container" id="authContainer">
+            
+            <!-- REGISTER FORM -->
+            <div class="form-box register-box">
+                <h2>Create Account 🚀</h2>
+                <p class="subtitle">Join as a Creator or Backer</p>
+                
+                <form onsubmit="handleRegister(event)">
+                    <div class="input-group">
+                        <input type="text" id="reg-name" required placeholder=" ">
+                        <label>Full Name</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" id="reg-email" required placeholder=" ">
+                        <label>Email Address</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="reg-password" required placeholder=" ">
+                        <label>Password</label>
+                    </div>
+
+                    <button type="submit" class="submit-btn green-btn">Sign Up</button>
+                </form>
+
+                <p class="toggle-text">Already have an account? <a href="#" onclick="toggleAuth(false)">Sign In</a></p>
+            </div>
+
+            <!-- LOGIN FORM -->
+            <div class="form-box login-box">
+                <h2>Welcome Back 👋</h2>
+                <p class="subtitle">Log in to manage your campaigns</p>
+
+                <form onsubmit="handleLogin(event)">
+                    <div class="input-group">
+                        <input type="email" id="login-email" required placeholder=" ">
+                        <label>Email Address</label>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" id="login-password" required placeholder=" ">
+                        <label>Password</label>
+                    </div>
+
+                    <button type="submit" class="submit-btn blue-btn">Sign In</button>
+                </form>
+
+                <p class="toggle-text">Don't have an account? <a href="#" onclick="toggleAuth(true)">Register Now</a></p>
+            </div>
+
+            <!-- SLIDING OVERLAY PANEL -->
+            <div class="overlay-container">
+                <div class="overlay">
+                    <div class="overlay-panel overlay-left">
+                        <h1>Back to CrowdFund!</h1>
+                        <p>To stay connected with your supported projects, please login with your info.</p>
+                        <button class="ghost-btn" onclick="toggleAuth(false)">Sign In</button>
+                    </div>
+                    <div class="overlay-panel overlay-right">
+                        <h1>Start Your Journey!</h1>
+                        <p>Enter your details and start bringing your creative ideas to life.</p>
+                        <button class="ghost-btn" onclick="toggleAuth(true)">Sign Up</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://localhost:5000/api";
+
+        // Toggle sliding animations between Login & Register
+        function toggleAuth(isRegister) {
+            const container = document.getElementById('authContainer');
+            if (isRegister) {
+                container.classList.add('right-panel-active');
+            } else {
+                container.classList.remove('right-panel-active');
+            }
+        }
+
+        // Handle Registration
+        async function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value;
+            const email = document.getElementById('reg-email').value;
+            const password = document.getElementById('reg-password').value;
+
+            try {
+                const res = await fetch(`${API_URL}/register`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    alert("Registration successful! Logging you in...");
+                    // Session save karke direct Home Page par redirect
+                    localStorage.setItem('currentUser', JSON.stringify({ name, email }));
+                    window.location.href = 'index.html';
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert("Server error during registration.");
+            }
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(`${API_URL}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await res.json();
+                if (res.ok) {
+                    // Session save karke Home Page par redirect
+                    localStorage.setItem('currentUser', JSON.stringify(data.user));
+                    window.location.href = 'index.html';
+                } else {
+                    alert(data.error);
+                }
+            } catch (err) {
+                alert("Server error during login.");
+            }
+        }
+    </script>
+</body>
+</html>
