@@ -7,8 +7,8 @@ CrowdFund ek modern, responsive Full-Stack Crowdfunding Web Application hai. Is 
 ## 🛠️ Tech Stack
 
 * **Frontend:** HTML5, CSS3 (Flexbox & Grid Layouts), JavaScript (ES6+), LocalStorage (Session Management)
-* **Backend:** Node.js, Express.js
-* **Database:** MongoDB / JSON Data Store
+* **Backend:** Node.js, Express.js, Nodemailer (Email/OTP Services)
+* **Database:** MongoDB (Mongoose ORM)
 * **API Architecture:** RESTful APIs
 
 ---
@@ -16,6 +16,7 @@ CrowdFund ek modern, responsive Full-Stack Crowdfunding Web Application hai. Is 
 ## ✨ Key Features
 
 * 🔐 **User Authentication:** Dynamic Sign Up, Login, aur Logout functionality with session management.
+* 🔑 **OTP-Based Password Reset:** Secure Forgot Password system with Email OTP verification via Nodemailer.
 * 📋 **Campaign Management:** Users apne individual campaigns create kar sakte hain with target goal, category, aur descriptions.
 * 📊 **Personal User Dashboard:** Dynamic stats tracking created campaigns, raised amounts, aur percentage goal completion.
 * 🔍 **Smart Search & Filtering:** Category-wise filtering (Tech, Medical, Education, etc.) aur search functionality.
@@ -28,18 +29,24 @@ CrowdFund ek modern, responsive Full-Stack Crowdfunding Web Application hai. Is 
 ```text
 crowdfunding-platform/
 │
-├── 📁 frontend/              # Client-side UI & Scripts
-│   ├── index.html            # Main Landing / Explore Page
-│   ├── auth.html             # Login & Registration Page
-│   ├── dashboard.html        # User Profile & Stats Dashboard
-│   ├── style.css             # Platform Styling & Layouts
-│   ├── auth-style.css        # Authentication UI Styling
-│   └── script.js             # Client Logic, DOM & API calls
+├── 📁 backend/                # Server-side Application
+│   ├── 📁 modules/            # Mongoose Schemas & Database Models
+│   │   └── User.js            # User Schema (OTP & Password Handling)
+│   ├── .env                   # Environment Variables (Secrets & Credentials)
+│   ├── package.json           # Node dependencies & scripts
+│   ├── package-lock.json
+│   └── server.js              # Express API Routes & Server logic
 │
-├── 📁 backend/               # Server-side Application
-│   ├── server.js             # Express API Routes & Server logic
-│   ├── package.json          # Node dependencies & scripts
-│   └── .package-lock.json
+├── 📁 frontend/               # Client-side UI & Scripts
+│   ├── index.html             # Main Landing / Explore Page
+│   ├── auth.html              # Combined Authentication Page
+│   ├── login.html             # User Login Page
+│   ├── register.html          # New User Registration Page
+│   ├── forgot-password.html   # Password Recovery & OTP Verification
+│   ├── dashboard.html         # User Profile & Stats Dashboard
+│   ├── style.css              # Platform Styling & Layouts
+│   ├── auth-style.css         # Authentication UI Styling
+│   └── script.js              # Client Logic, DOM & API calls
 │
-├── .gitignore                # Ignores heavy folders like node_modules
-└── README.md                 # Project Documentation
+├── .gitignore                 # Ignores sensitive/heavy files (.env, node_modules)
+└── README.md                  # Project Documentation

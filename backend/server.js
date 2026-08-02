@@ -309,6 +309,16 @@ app.post('/api/verify-otp-reset', async (req, res) => {
     }
 });
 
+const path = require('path');
+
+// Serve static files from frontend
+app.use(express.static(path.join(__dirname, '../frontend')));
+
+// Handle single-page routing / send index.html for all other routes
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+});
+
 app.listen(PORT, () => {
     console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
