@@ -10,12 +10,12 @@
 
     <div class="auth-wrapper">
         <div class="auth-container" id="authContainer">
-            
+
             <!-- REGISTER FORM -->
             <div class="form-box register-box">
                 <h2>Create Account 🚀</h2>
                 <p class="subtitle">Join as a Creator or Backer</p>
-                
+
                 <form onsubmit="handleRegister(event)">
                     <div class="input-group">
                         <input type="text" id="reg-name" required placeholder=" ">
@@ -54,6 +54,13 @@
                         <label>Password</label>
                     </div>
 
+                    <div style="text-align: right; margin-top: 6px; margin-bottom: 15px;">
+                        <a href="forgot-password.html">
+                            Forgot Password?
+                        </a>
+                    </div>
+
+                    <!-- Sign In Button -->
                     <button type="submit" class="submit-btn blue-btn">Sign In</button>
                 </form>
 
@@ -79,6 +86,33 @@
         </div>
     </div>
 
+<!-- 🔑 OTP PASSWORD RESET MODAL -->
+<div id="otp-modal" class="modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); align-items: center; justify-content: center; z-index: 1000;">
+    <div style="background: white; padding: 25px; border-radius: 8px; width: 350px; position: relative;">
+        <span onclick="closeOtpModal()" style="position: absolute; right: 15px; top: 10px; cursor: pointer; font-weight: bold;">&times;</span>
+
+        <h3>🔑 Reset Password via OTP</h3>
+
+        <!-- Step 1: Send OTP Form -->
+        <div id="step-send-otp">
+            <p style="font-size: 13px; color: #666;">Enter your registered email to receive OTP.</p>
+            <input type="email" id="otp-email" placeholder="Enter Email" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="sendOTP()" style="width: 100%; background: #007bff; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer;">
+                Send OTP 📩
+            </button>
+        </div>
+
+        <!-- Step 2: Verify OTP & Reset Form (Initially Hidden) -->
+        <div id="step-verify-otp" style="display: none;">
+            <p style="font-size: 13px; color: #28a745;">OTP Sent! Check your inbox.</p>
+            <input type="text" id="otp-code" placeholder="Enter 6-Digit OTP" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+            <input type="password" id="otp-new-pass" placeholder="Enter New Password" required style="width: 100%; padding: 8px; margin-bottom: 10px; box-sizing: border-box;">
+            <button onclick="verifyAndReset()" style="width: 100%; background: #28a745; color: white; padding: 10px; border: none; border-radius: 4px; cursor: pointer;">
+                Verify & Reset Password 🚀
+            </button>
+        </div>
+    </div>
+</div>
     <script>
         const API_URL = "http://localhost:5000/api";
 

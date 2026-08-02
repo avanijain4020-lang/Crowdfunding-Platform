@@ -47,7 +47,7 @@ function renderCampaigns(campaigns) {
                         <span style="background: #e0f2f1; color: #00796b; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; text-transform: uppercase;">
                             🏷️ ${campaign.category || 'General'}
                         </span>
-                        
+
                         <span style="font-size: 13px; color: #555; background: #f0f0f0; padding: 4px 10px; border-radius: 12px; font-weight: 600;">
                             👤 ${campaign.creatorName || 'Anonymous'}
                         </span>
@@ -56,7 +56,7 @@ function renderCampaigns(campaigns) {
                     <h4 style="margin-top: 10px; margin-bottom: 8px;">${campaign.title}</h4>
                     <p style="color: #555; font-size: 14px; margin-bottom: 15px;">${campaign.description}</p>
                 </div>
-                
+
                 <div>
                     <div class="progress-container">
                         <div class="stats">
@@ -93,7 +93,7 @@ function filterCampaigns() {
         const matchesSearch = campaign.title.toLowerCase().includes(searchText) || 
                               campaign.description.toLowerCase().includes(searchText) ||
                               (campaign.creatorName && campaign.creatorName.toLowerCase().includes(searchText));
-                              
+
         const matchesCategory = selectedCategory === "All" || campaign.category === selectedCategory;
 
         return matchesSearch && matchesCategory;
@@ -272,10 +272,161 @@ function checkUserSession() {
     }
 }
 
+// ==========================================
+// 🌟 Interactive Product Walkthrough (Driver.js)
+// ==========================================
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Check if the user has already completed the tour
+    const hasSeenTour = localStorage.getItem('hasSeenCrowdFundTour');
+
+    if (!hasSeenTour) {
+        
+        // Ensure Driver.js library is loaded
+        if (typeof window.driver === 'undefined' || typeof window.driver.js === 'undefined') {
+            console.error("Driver.js library loaded nahi hui hai. CDN links check karein.");
+            return;
+        }
+
+        const driver = window.driver.js.driver;
+
+        const tour = driver({
+            showProgress: true,
+            animate: true,
+            allowClose: true,
+            doneBtnText: 'Get Started! 🚀',
+            nextBtnText: 'Next ➔',
+            prevBtnText: '⬅ Back',
+            
+            // Steps matched EXACTLY with your HTML IDs and Classes
+            steps: [
+                { 
+                    popover: { 
+                        title: 'Welcome to CrowdFund! 🎉', 
+                        description: 'Let\'s take a quick 1-minute tour to see how this platform works.' 
+                    } 
+                },
+                { 
+                    element: '.filter-section', 
+                    popover: { 
+                        title: '1. Search & Filter Campaigns', 
+                        description: 'Use the search box or category selector (Tech, Eco, Gaming) to quickly find projects you care about.', 
+                        side: "bottom", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '#campaigns-list', 
+                    popover: { 
+                        title: '2. Explore Active Campaigns', 
+                        description: 'All active campaigns appear here. You can view progress bars, raised amounts, and back any project directly.', 
+                        side: "top", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    element: '.form-section', 
+                    popover: { 
+                        title: '3. Launch Your Own Campaign 🚀', 
+                        description: 'Fill in your project title, category, description, and funding goal to start raising funds for your idea.', 
+                        side: "top", 
+                        align: 'center' 
+                    } 
+                },
+                { 
+                    popover: { 
+                        title: 'You\'re All Set! ✨', 
+                        description: 'You are now ready to explore and use the CrowdFund platform. Happy Crowdfunding!' 
+                    } 
+                }
+            ],
+            
+            onDestroyed: () => {
+                // Save flag so it doesn't auto-open again for this user
+                localStorage.setItem('hasSeenCrowdFundTour', 'true');
+            }
+        });
+
+        // Delay ensures dynamic elements are rendered before running tour
+        setTimeout(() => {
+            tour.drive();
+        }, 1000);
+    }
+});
+
+// ==========================================
+// 🔄 Reset Tour Function
+// ==========================================
+function resetTour() {
+    // Tour dekhne ka flag delete karein
+    localStorage.removeItem('hasSeenCrowdFundTour');
+
+    // Page ko reload karein taaki tour turant launch ho jaye
+    location.reload();
+}
+
 function logout() {
     localStorage.removeItem('currentUser');
     alert("Logged out successfully!");
     window.location.href = 'auth.html';
+}
+
+function openOtpModal() {
+    document.getElementById('otp-modal').style.display = 'flex';
+}
+
+function closeOtpModal() {
+    document.getElementById('otp-modal').style.display = 'none';
+}
+
+// 1. Trigger Send OTP
+async function sendOTP() {
+    const email = document.getElementById('otp-email').value;
+    if (!email) return alert('Please enter email');
+
+    try {
+        const res = await fetch('/api/send-otp', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            alert(data.message);
+            document.getElementById('step-send-otp').style.display = 'none';
+            document.getElementById('step-verify-otp').style.display = 'block';
+        } else {
+            alert('❌ ' + data.message);
+        }
+    } catch (err) {
+        alert('Server Error!');
+    }
+}
+
+// 2. Trigger Verify & Reset
+async function verifyAndReset() {
+    const email = document.getElementById('otp-email').value;
+    const otp = document.getElementById('otp-code').value;
+    const newPassword = document.getElementById('otp-new-pass').value;
+
+    try {
+        const res = await fetch('/api/verify-otp-reset', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, otp, newPassword })
+        });
+        const data = await res.json();
+
+        if (res.ok) {
+            alert('✅ ' + data.message);
+            closeOtpModal();
+        } else {
+            alert('❌ ' + data.message);
+        }
+    } catch (err) {
+        alert('Server Error!');
+    }
 }
 
 // Initial Calls

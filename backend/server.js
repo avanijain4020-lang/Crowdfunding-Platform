@@ -2,15 +2,17 @@ const express = require('express');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
+const nodemailer = require('nodemailer');
+require('dotenv').config(); // Environment variables ke liye
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
 
 // 1. MONGOOSE CONNECTION
-const MONGO_URI = "mongodb://localhost:27017/crowdfundDB";
+const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/crowdfundDB";
 
 mongoose.connect(MONGO_URI)
     .then(() => console.log("✅ Successfully Connected to MongoDB Database!"))
@@ -19,14 +21,17 @@ mongoose.connect(MONGO_URI)
 
 // 2. SCHEMAS & MODELS
 
-// User Schema
+// User Schema (OTP field names matching api routes)
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
-}, { timestamps: true });
+  name: { type: String },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  resetOTP: String,
+  resetOTPExpires: Date,
+});
 
-const User = mongoose.model('User', userSchema);
+// Import ya inline model create karne ka safe tareeka
+const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 // Campaign Schema
 const campaignSchema = new mongoose.Schema({
@@ -39,7 +44,7 @@ const campaignSchema = new mongoose.Schema({
     creatorEmail: { type: String, default: '' }
 }, { timestamps: true });
 
-const Campaign = mongoose.model('Campaign', campaignSchema);
+const Campaign = mongoose.models.Campaign || mongoose.model('Campaign', campaignSchema);
 
 
 // 3. AUTH ROUTES
@@ -140,7 +145,7 @@ app.get('/api/user-campaigns/:email', async (req, res) => {
 app.post('/api/campaign/create', async (req, res) => {
     try {
         const { title, description, goalAmount, category, creatorName, creatorEmail } = req.body;
-        
+
         if (!title || !goalAmount) {
             return res.status(400).json({ error: "Title and Goal Amount are required!" });
         }
@@ -216,6 +221,91 @@ app.post('/api/donate', async (req, res) => {
         res.json({ message: "Pledge successful!", updatedRaisedAmount: campaign.raisedAmount });
     } catch (err) {
         res.status(500).json({ error: "Pledge failed." });
+    }
+});
+
+
+// 5. NODEMAILER & OTP PASSWORD RESET ROUTES
+
+// Nodemailer Transporter Setup (Gmail Config)
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS  // Gmail App Password
+    }
+});
+
+// API 1: Send OTP to Email
+app.post('/api/send-otp', async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User with this email does not exist.' });
+        }
+
+        // 6-Digit Random OTP Generate Karein
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+        // Database me OTP aur 10 Minute Expiry Save Karein
+        user.resetOTP = otp;
+        user.resetOTPExpires = Date.now() + 10 * 60 * 1000; // 10 Minutes Valid
+        await user.save();
+
+        // Email Send Config
+        const mailOptions = {
+            from: `"CrowdFund Support" <${process.env.EMAIL_USER}>`,
+            to: email,
+            subject: '🔒 Password Reset OTP - CrowdFund',
+            html: `
+                <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                    <h2 style="color: #007bff;">Password Reset Request</h2>
+                    <p>Your OTP for resetting password is:</p>
+                    <h1 style="background: #f4f4f4; padding: 10px; display: inline-block; letter-spacing: 4px; color: #333;">${otp}</h1>
+                    <p>This OTP is valid for <b>10 minutes</b>. Do not share it with anyone.</p>
+                </div>
+            `
+        };
+
+        await transporter.sendMail(mailOptions);
+        res.status(200).json({ message: 'OTP sent successfully to your email!' });
+
+    } catch (error) {
+        console.error('Send OTP Error:', error);
+        res.status(500).json({ message: 'Failed to send OTP email.' });
+    }
+});
+
+// API 2: Verify OTP & Reset Password
+app.post('/api/verify-otp-reset', async (req, res) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        // OTP Match & Expiry Check
+        if (user.resetOTP !== otp || Date.now() > user.resetOTPExpires) {
+            return res.status(400).json({ message: 'Invalid or expired OTP!' });
+        }
+
+        // Password Hash Karke Save Karein (Security + Login compatibility fix)
+        user.password = await bcrypt.hash(newPassword, 10);
+
+        // Clear OTP after successful reset
+        user.resetOTP = null;
+        user.resetOTPExpires = null;
+        await user.save();
+
+        res.status(200).json({ message: 'Password updated successfully! You can now login.' });
+
+    } catch (error) {
+        console.error('Verify OTP Error:', error);
+        res.status(500).json({ message: 'Server error while resetting password.' });
     }
 });
 
